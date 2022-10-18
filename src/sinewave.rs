@@ -1,9 +1,7 @@
-
-
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct SineWave {
     /// start of the sine wave in seconds
-    pub start: u16, 
+    pub start: u16,
     /// length of the sine wave in seconds
     pub length: u16,
     /// frequency of the sine wave
@@ -15,7 +13,7 @@ impl SineWave {
         Self {
             length,
             start,
-            frequency
+            frequency,
         }
     }
 
@@ -28,4 +26,3 @@ impl SineWave {
         wave
     }
 }
-

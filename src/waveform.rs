@@ -1,13 +1,13 @@
 const SAMPLES: usize = (crate::consts::WAVE_LENGTH * crate::consts::WAVE_FREQ) as usize;
 
 pub struct Waveform {
-    pub samples: [i16; SAMPLES]
+    pub samples: [i16; SAMPLES],
 }
 
 impl Waveform {
     pub fn zero() -> Self {
         Self {
-            samples: [0; SAMPLES] 
+            samples: [0; SAMPLES],
         }
     }
 
@@ -30,4 +30,3 @@ impl Waveform {
         result
     }
 }
-
