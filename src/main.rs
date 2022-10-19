@@ -62,17 +62,18 @@ fn main() {
     }
     println!("Generated initial population");
     for generation in 0..max_gen {
-        population.par_sort_unstable_by(|ind0, ind1| ind0.0.total_cmp(&ind1.0));
-        println!(
-            "{} -- Gen {}. Best ft: {}. Worst ft: {}",
-            SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-            generation,
-            population[0].0,
-            population.last().unwrap().0
-        );
+        if generation > 0 {
+            println!(
+                "{} -- Gen {}. Best ft: {}. Worst ft: {}",
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+                generation,
+                population[0].0,
+                population.last().unwrap().0
+            );
+        }
         let mut offsprings: Vec<(f32, crate::individual::Individual)> = vec![];
         for pair in population.chunks_exact(2) {
             if let [(_ft0, ind0), (_ft1, ind1)] = pair {
@@ -82,7 +83,7 @@ fn main() {
             }
         }
         population.append(&mut offsprings);
-        population.sort_unstable_by(|ind0, ind1| ind0.0.total_cmp(&ind1.0));
+        population.par_sort_unstable_by(|ind0, ind1| ind0.0.total_cmp(&ind1.0));
         population.truncate(population_size as usize);
         for (_ft, ind) in population.iter_mut() {
             ind.mutate(mutation_rate, &mut rng);
