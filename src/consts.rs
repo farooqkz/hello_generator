@@ -1,7 +1,7 @@
 /// Minimum number of waves an Individual is initialized with.
-pub const MIN_WAVES: u16 = 2;
+pub const MIN_WAVES: u16 = 10;
 /// Maximum number of waves an Individual is initialized with.
-pub const MAX_WAVES: u16 = 800;
+pub const MAX_WAVES: u16 = 400;
 /// Minimum frequency of a wave.
 pub const MIN_FREQ: u16 = 20;
 /// Maximum frequency of a wave.
@@ -17,4 +17,4 @@ pub const WAVE_LENGTH_SAMPLES: u16 = WAVE_LENGTH * WAVE_FREQ;
 pub const TARGET_WORD: &str = "hello";
 
 /// Maximum LV distance
-pub const MAXIMUM_DISTANCE: u16 = 512;
+pub const MAXIMUM_DISTANCE: u16 = 1000;
