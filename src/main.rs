@@ -10,6 +10,7 @@ use tinyrand::StdRand;
 use vosk::{Model, Recognizer};
 use std::fs::File;
 use std::path::Path;
+use wav::bit_depth::*;
 
 fn cli() -> Command {
     command!().args([
@@ -92,5 +93,5 @@ fn main() {
         crate::consts::WAVE_FREQ as u32,
         16
     );
-    wav::write(header, wav::bit_depth::from(population[0].1.to_wave().samples.to_vec()), &mut outfile);
+    wav::write(header, &wav::bit_depth::BitDepth::from(population[0].1.to_wave().samples.to_vec()), &mut outfile);
 }
