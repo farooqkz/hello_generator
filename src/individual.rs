@@ -67,6 +67,12 @@ impl Individual {
                 ind0.waves.insert(wave.clone());
             }
         }
+        if ind0.waves.len() == 0 {
+            ind0 = Individual::new_rand(rng);
+        }
+        if ind1.waves.len() == 0 {
+            ind1 = Individual::new_rand(rng);
+        }
         (ind0, ind1)
     }
 

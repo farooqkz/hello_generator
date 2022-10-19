@@ -11,13 +11,14 @@ use vosk::{Model, Recognizer};
 use std::fs::File;
 use std::path::Path;
 use wav::bit_depth::*;
+use rayon::prelude::*;
 
 fn cli() -> Command {
     command!().args([
         arg!(--model <PATH> "Path to model"),
         arg!(--pop <POPULATION_SIZE> "Population size(integer)"),
         arg!(--mutation <MUTATION_RATE> "Mutation rate(float)"),
-        arg!(--maxgen <MAX_GEN> "Maximum generation to run"),
+        arg!(--maxgen <MAX_GEN> "Maximum generation to run(integer)"),
     ])
 }
 
@@ -46,6 +47,9 @@ fn main() {
         .expect("Please enter a maximum generation"))
     .as_str();
     let max_gen: u32 = u32::from_str_radix(max_gen, 10).expect("Please enter a u32 max gen");
+    if population_size % 2 == 1 || population_size <= 0{
+        panic!("population size MUST be even and positive");
+    }
     let mut recognizer: Recognizer =
         Recognizer::new(&model, crate::consts::WAVE_FREQ as f32).expect("Cannot build recognizer");
     recognizer.set_max_alternatives(2);
@@ -58,7 +62,7 @@ fn main() {
     }
     println!("Generated initial population");
     for generation in 0..max_gen {
-        population.sort_unstable_by(|ind0, ind1| ind0.0.total_cmp(&ind1.0));
+        population.par_sort_unstable_by(|ind0, ind1| ind0.0.total_cmp(&ind1.0));
         println!(
             "{} -- Gen {}. Best ft: {}. Worst ft: {}",
             SystemTime::now()
@@ -70,13 +74,12 @@ fn main() {
             population.last().unwrap().0
         );
         let mut offsprings: Vec<(f32, crate::individual::Individual)> = vec![];
-        for (index, ind) in population.iter().enumerate() {
-            if index == population.len() - 1 {
-                break;
+        for pair in population.chunks_exact(2) {
+            if let [(_ft0, ind0), (_ft1, ind1)] = pair {
+                let children = ind0.combine(ind1, &mut rng);
+                offsprings.push((children.0.fitness(&mut recognizer), children.0));
+                offsprings.push((children.1.fitness(&mut recognizer), children.1));
             }
-            let children = ind.1.combine(&population[index + 1].1, &mut rng);
-            offsprings.push((children.0.fitness(&mut recognizer), children.0));
-            offsprings.push((children.1.fitness(&mut recognizer), children.1));
         }
         population.append(&mut offsprings);
         population.sort_unstable_by(|ind0, ind1| ind0.0.total_cmp(&ind1.0));
@@ -93,5 +96,5 @@ fn main() {
         crate::consts::WAVE_FREQ as u32,
         16
     );
-    wav::write(header, &wav::bit_depth::BitDepth::from(population[0].1.to_wave().samples.to_vec()), &mut outfile);
+    wav::write(header, &wav::bit_depth::BitDepth::from(population[0].1.to_wave().samples.to_vec()), &mut outfile).expect("Cannot write wave");
 }
