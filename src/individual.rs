@@ -76,22 +76,16 @@ impl Individual {
         (ind0, ind1)
     }
 
-    pub fn mutate(&mut self, chance: f32, rng: &mut StdRand) {
-        let mut to_be_mutated: Vec<(crate::sinewave::SineWave, crate::sinewave::SineWave)> = vec![];
-        for sine in self.waves.iter() {
-            if rng.next_bool(Probability::new(chance as f64)) {
-                let new_sine = crate::sinewave::SineWave {
-                    start: sine.start,
-                    length: sine.length,
-                    frequency: rng.next_range(crate::consts::MIN_FREQ..crate::consts::MAX_FREQ),
-                };
-                to_be_mutated.push((new_sine, *sine));
-            }
+    pub fn mutate(&mut self, chance: f32, rng: &mut StdRand) -> bool {
+        if rng.next_bool(Probability::new(chance as f64)) {
+            let freq: u16 = rng.next_range(crate::consts::MIN_FREQ..crate::consts::MAX_FREQ);
+            let start: u16 = rng.next_range(0..crate::consts::WAVE_LENGTH_SAMPLES);
+            let length: u16 = rng.next_range(start..crate::consts::WAVE_LENGTH_SAMPLES);
+            self.waves
+                .insert(crate::sinewave::SineWave::new(start, length, freq));
+            return true;
         }
-        for (new, old) in to_be_mutated.iter() {
-            self.waves.remove(old);
-            self.waves.insert(*new);
-        }
+        false
     }
 
     pub fn to_wave(&self) -> crate::waveform::Waveform {

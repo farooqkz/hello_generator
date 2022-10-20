@@ -3,9 +3,9 @@ pub const MIN_WAVES: u16 = 10;
 /// Maximum number of waves an Individual is initialized with.
 pub const MAX_WAVES: u16 = 400;
 /// Minimum frequency of a wave.
-pub const MIN_FREQ: u16 = 20;
+pub const MIN_FREQ: u16 = 85;
 /// Maximum frequency of a wave.
-pub const MAX_FREQ: u16 = 20000;
+pub const MAX_FREQ: u16 = 155;
 
 /// Waveform(sound data) length in seconds
 pub const WAVE_LENGTH: u16 = 1;
