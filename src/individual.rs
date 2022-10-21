@@ -5,9 +5,6 @@ use vosk::Recognizer;
 
 const WORST_FITNESS: u16 = crate::consts::MAXIMUM_DISTANCE * 3 + crate::consts::MAX_WAVES;
 
-pub fn normalize_fitness(ft: u16) -> f32 {
-    ft as f32 / WORST_FITNESS as f32
-}
 
 pub struct Individual {
     pub waves: HashSet<crate::sinewave::SineWave>,
@@ -20,8 +17,8 @@ impl Individual {
         };
         for _ in 0..rng.next_range(crate::consts::MIN_WAVES..crate::consts::MAX_WAVES) {
             let freq: u16 = rng.next_range(crate::consts::MIN_FREQ..crate::consts::MAX_FREQ);
-            let start: u16 = rng.next_range(0..crate::consts::WAVE_LENGTH_SAMPLES);
-            let length: u16 = rng.next_range(start..crate::consts::WAVE_LENGTH_SAMPLES);
+            let start: u16 = rng.next_lim_u16(crate::consts::WAVE_LENGTH_SAMPLES);
+            let length: u16 = rng.next_range(crate::consts::WAVE_LENGTH_SAMPLES/50..crate::consts::WAVE_LENGTH_SAMPLES/5);
             ind.waves
                 .insert(crate::sinewave::SineWave::new(start, length, freq));
         }
@@ -42,11 +39,11 @@ impl Individual {
             None => crate::consts::MAXIMUM_DISTANCE,
         };
         recognizer.reset();
-        normalize_fitness((ft * 3 + self.waves.len() as u16) / 4)
+        ft as f32 / crate::consts::MAXIMUM_DISTANCE as f32
     }
 
     pub fn combine(&self, other: &Individual, rng: &mut StdRand) -> (Individual, Individual) {
-        let point = rng.next_lim_u16(crate::consts::WAVE_LENGTH * crate::consts::WAVE_FREQ);
+        let point = rng.next_lim_u16(crate::consts::WAVE_LENGTH_SAMPLES);
         let mut ind0 = Individual {
             waves: HashSet::new(),
         };
@@ -54,24 +51,37 @@ impl Individual {
             waves: HashSet::new(),
         };
         for wave in self.waves.iter() {
-            if wave.start <= point {
+            let wave_end = wave.start + wave.length;
+            if wave_end <= point {
                 ind0.waves.insert(wave.clone());
+            } else if wave.start <= point {
+                let mut new_wave_before_point = wave.clone();
+                new_wave_before_point.length = point - wave.start;
+                let mut new_wave_after_point = wave.clone();
+                new_wave_after_point.start = point + 1;
+                new_wave_after_point.length -= wave.length - point; 
+                ind0.waves.insert(new_wave_before_point);
+                ind1.waves.insert(new_wave_after_point);
             } else {
                 ind1.waves.insert(wave.clone());
             }
         }
         for wave in other.waves.iter() {
-            if wave.start <= point {
+            let wave_end = wave.start + wave.length;
+            if wave_end <= point {
                 ind1.waves.insert(wave.clone());
+            } else if wave.start <= point {
+                let mut new_wave_before_point = wave.clone();
+                new_wave_before_point.length = point - wave.start;
+                let mut new_wave_after_point = wave.clone();
+                new_wave_after_point.start = point + 1;
+                new_wave_after_point.length -= wave.length - point;
+                ind1.waves.insert(new_wave_before_point);
+                ind0.waves.insert(new_wave_after_point);
             } else {
                 ind0.waves.insert(wave.clone());
             }
-        }
-        if ind0.waves.len() == 0 {
-            ind0 = Individual::new_rand(rng);
-        }
-        if ind1.waves.len() == 0 {
-            ind1 = Individual::new_rand(rng);
+
         }
         (ind0, ind1)
     }
@@ -89,10 +99,7 @@ impl Individual {
     }
 
     pub fn to_wave(&self) -> crate::waveform::Waveform {
-        let mut waveforms: Vec<crate::waveform::Waveform> = vec![];
-        for sine in self.waves.iter() {
-            waveforms.push(sine.to_wave());
-        }
+        let waveforms: Vec<crate::waveform::Waveform> = self.waves.iter().map(|sine| sine.to_wave()).collect();
         crate::waveform::Waveform::combine(waveforms)
     }
 }

@@ -1,7 +1,7 @@
 /// Minimum number of waves an Individual is initialized with.
-pub const MIN_WAVES: u16 = 10;
+pub const MIN_WAVES: u16 = 4;
 /// Maximum number of waves an Individual is initialized with.
-pub const MAX_WAVES: u16 = 400;
+pub const MAX_WAVES: u16 = 40;
 /// Minimum frequency of a wave.
 pub const MIN_FREQ: u16 = 85;
 /// Maximum frequency of a wave.
