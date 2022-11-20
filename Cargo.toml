@@ -11,3 +11,4 @@ tinyrand = "0.5.0"
 levenshtein-diff = "0.2.3"
 clap = { version = "4.0.15", features = ["cargo"] }
 wav = "1.0.0"
+rayon = "1.5"
